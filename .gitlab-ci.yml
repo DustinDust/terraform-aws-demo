@@ -24,7 +24,7 @@ before_script:
   - export AWS_ACCESS_KEY=${AWS_ACCESS_KEY_ID}
   - export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
   - terraform init
-  - terraform workspace select $CI_COMMIT_REF_NAME
+  # - terraform workspace select $CI_COMMIT_REF_NAME
 
 terraform:fmt: &terraform_fmt
   stage: validate
