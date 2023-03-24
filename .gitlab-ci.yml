@@ -1,55 +1,48 @@
+# Terraform/Base
+#
+# The purpose of this template is to provide flexibility to the user so
+# they are able to only include the jobs that they find interesting.
+#
+# Therefore, this template is not supposed to run any jobs. The idea is to only
+# create hidden jobs. See: https://docs.gitlab.com/ee/ci/jobs/#hide-jobs
+#
+# There is a more opinionated template which we suggest the users to abide,
+# which is the lib/gitlab/ci/templates/Terraform.gitlab-ci.yml
 image:
-  name: hashicorp/terraform
-  entrypoint:
-    - '/usr/bin/env'
-    - 'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
+  name: '$CI_TEMPLATE_REGISTRY_HOST/gitlab-org/terraform-images/releases/1.4:latest'
 
 variables:
   TF_ROOT: ${CI_PROJECT_DIR} # The relative path to the root directory of the Terraform project
   TF_STATE_NAME: default # The name of the state file used by the GitLab Managed Terraform state backend
-
-stages:
-  - validate
-  - test
-  - build
-  - deploy
-  - cleanup
 
 cache:
   key: '${TF_ROOT}'
   paths:
     - ${TF_ROOT}/.terraform/
 
-before_script:
-  - export AWS_ACCESS_KEY=${AWS_ACCESS_KEY_ID}
-  - export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-  - terraform init
-  # - terraform workspace select $CI_COMMIT_REF_NAME
-
 terraform:fmt: &terraform_fmt
   stage: validate
   script:
-    - cd ${TF_ROOT}
-    - terraform fmt
+    - cd "${TF_ROOT}"
+    - gitlab-terraform fmt
   allow_failure: true
 
 terraform:validate: &terraform_validate
   stage: validate
   script:
     - cd "${TF_ROOT}"
-    - terraform validate
+    - gitlab-terraform validate
 
 terraform:build: &terraform_build
   stage: build
   script:
     - cd "${TF_ROOT}"
-    - terraform plan -out planfile
-    - terraform show -json planfile > plan.json
+    - gitlab-terraform plan
+    - gitlab-terraform plan-json
   resource_group: ${TF_STATE_NAME}
   artifacts:
     paths:
       - ${TF_ROOT}/plan.cache
-      - planfile
     reports:
       terraform: ${TF_ROOT}/plan.json
 
@@ -57,10 +50,8 @@ terraform:deploy: &terraform_deploy
   stage: deploy
   script:
     - cd "${TF_ROOT}"
-    - terraform apply -input=false "planfile"
+    - gitlab-terraform apply
   resource_group: ${TF_STATE_NAME}
-  dependencies:
-    - terraform:build
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       when: manual
@@ -69,6 +60,6 @@ terraform:destroy: &terraform_destroy
   stage: cleanup
   script:
     - cd "${TF_ROOT}"
-    - terraform destroy
+    - gitlab-terraform destroy
   resource_group: ${TF_STATE_NAME}
   when: manual
