@@ -60,7 +60,7 @@ terraform:deploy: &terraform_deploy
     - terraform apply -input=false "planfile"
   resource_group: ${TF_STATE_NAME}
   dependencies:
-    - terrafrom:build
+    - terraform:build
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       when: manual
