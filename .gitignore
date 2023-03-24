@@ -1,11 +1,11 @@
 # Local .terraform directories
 **/.terraform/*
+**/vars/*
 
 # .tfstate files
 *.tfstate
 *.tfstate.*
 
-vars/
 
 # Crash log files
 crash.log
@@ -18,7 +18,7 @@ crash.*.log
 *.tfvars
 *.tfvars.json
 
-plan.*
+plan.out
 
 # Ignore override files as they are usually used to override resources locally and so
 # are not checked in
