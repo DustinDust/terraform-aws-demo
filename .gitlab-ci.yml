@@ -44,7 +44,7 @@ terraform:build: &terraform_build
   script:
     - cd "${TF_ROOT}"
     - terraform plan -out planfile
-    - terraform plan-json
+    - terraform show -json planfile > plan.json
   resource_group: ${TF_STATE_NAME}
   artifacts:
     paths:
